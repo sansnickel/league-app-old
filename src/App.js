@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+
 class App extends Component {
   constructor() {
     super();
@@ -28,9 +29,8 @@ class App extends Component {
 
 
 async getMatches() {
-
-
-    if (this.state.accountid !== '') {
+        console.log(this.state.matchlist.length);
+  
         for (var i = 0; i < this.state.matchlist.length; i++) {
           const response = await fetch('/api/summoner/match/?accountid=' + this.state.accountid + '&matchid=' + this.state.matchlist[i]);
           const json = await response.json();
@@ -39,18 +39,16 @@ async getMatches() {
           this.setState({matches: clone});
         }        
         
-
-      
-    }
+  
  }
 
 
  async getMatchlist() {
-    if (this.state.accountid !== '') {
+
       const response = await fetch('/api/summoner/matchlist/?accountid=' + this.state.accountid);
       const json = await response.json();
       this.setState({matchlist: json}, this.getMatches);
-    }
+    
 
  }
 
@@ -81,32 +79,60 @@ async getMatches() {
 
   render() {
     return (
+      
       <div className="App">
         <div className="App-header">
+
           <img src={logo} className="App-logo" alt="logo" />
           <h2>{this.state.message}</h2>
+        
         </div>
+        
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
+        
         </p>
-        <div>
+      <div>
         <form onSubmit={this.updateState}>
-          <label htmlFor="summonername">Enter Summoner Name</label>
+          <label htmlFor="summonername">Enter Summoner Name: </label>
             <input id="summonername" name="summonername" type="text"/>        
           <button>Search</button>
         </form>
         <h4>{this.state.summonername}{this.state.accountid}</h4>
         <h3>{this.state.matchlist.length}</h3>
         
-        <div>
-          {this.state.matches.map(match => <div> {match.win} | {match.duration} | {match.spells[0]} | {match.spells[1]} | {match.champion} | {match.kda} | {match.level} | {match.cs} | {match.cspm} </div>)}
-        
+        <table className = 'table'>
+          <thead>
+            <tr>
+              <th>Win</th>
+              <th>Duration</th>
+              <th>Spell1</th>
+              <th>Spell2</th>
+              <th>Champion</th>
+              <th>KDA</th>
+              <th>Level</th>
+              <th>CS</th>
+              <th>CSPM</th>
 
-        </div>
-        </div>
-      </div>
-
-
+            </tr>
+          </thead>
+          <tbody>
+          {this.state.matches.map(match => <tr className= {match.win === true ? 'table-primary' : 'table-danger'}>
+                                            <td>{match.win + ''}</td>
+                                            <td>{match.duration}</td>
+                                            <td>{match.spells[0]}</td>
+                                            <td>{match.spells[1]}</td>
+                                            <td><img src={'http://ddragon.leagueoflegends.com/cdn/8.14.1/img/champion/' + (match.champion)}/></td>
+                                            <td>{match.kda}</td>
+                                            <td>{match.level}</td>
+                                            <td>{match.cs}</td>
+                                            <td>{match.cspm}</td>
+                                           </tr>)}
+         </tbody>
+         </table>
+   
+       </div>
+       </div>
     );
    
   
