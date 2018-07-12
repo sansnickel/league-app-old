@@ -7,8 +7,9 @@ class App extends Component {
     super();
     this.state = { message: '',
                    summonername: '', 
-                   accountid: '0',
-                   matches: '' }
+                   accountid: '',
+                   matchlist: [], 
+                   matches: []}
     this.updateState = this.updateState.bind(this);
   };
   
@@ -25,11 +26,30 @@ class App extends Component {
     this.setState({ summonername: e.target.value })
   }
 
- async getMatches() {
+
+async getMatches() {
+
+
     if (this.state.accountid !== '') {
-      const response = await fetch('/api/summoner/matches/?accountid=' + this.state.accountid);
+        for (var i = 0; i < this.state.matchlist.length; i++) {
+          const response = await fetch('/api/summoner/match/?accountid=' + this.state.accountid + '&matchid=' + this.state.matchlist[i]);
+          const json = await response.json();
+          var clone = this.state.matches.slice();
+          clone[i] = json;
+          this.setState({matches: clone});
+        }        
+        
+
+      
+    }
+ }
+
+
+ async getMatchlist() {
+    if (this.state.accountid !== '') {
+      const response = await fetch('/api/summoner/matchlist/?accountid=' + this.state.accountid);
       const json = await response.json();
-      this.setState({matches: json});
+      this.setState({matchlist: json}, this.getMatches);
     }
 
  }
@@ -40,7 +60,7 @@ class App extends Component {
     if (this.state.summonername !== '') {
       const response = await fetch('/api/summoner/info/?summonername=' + this.state.summonername);
       const json = await response.json();
-      this.setState({accountid: json}, this.getMatches);
+      this.setState({ accountid: json }, this.getMatchlist);
     }
 
   }
@@ -75,14 +95,23 @@ class App extends Component {
             <input id="summonername" name="summonername" type="text"/>        
           <button>Search</button>
         </form>
-        <h4>{this.state.summonername}{this.state.accountid}{this.state.matches}</h4>
+        <h4>{this.state.summonername}{this.state.accountid}</h4>
+        <h3>{this.state.matchlist.length}</h3>
+        
+        <div>
+          {this.state.matches.map(match => <div> {match.win} | {match.duration} | {match.spells[0]} | {match.spells[1]} | {match.champion} | {match.kda} | {match.level} | {match.cs} | {match.cspm} </div>)}
+        
+
+        </div>
         </div>
       </div>
 
 
-
     );
-  }
+   
+  
+    
+}
 
 
 
