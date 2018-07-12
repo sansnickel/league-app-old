@@ -7,7 +7,8 @@ class App extends Component {
     super();
     this.state = { message: '',
                    summonername: '', 
-                   accountid: '0' }
+                   accountid: '0',
+                   matches: '' }
     this.updateState = this.updateState.bind(this);
   };
   
@@ -23,17 +24,27 @@ class App extends Component {
   updateState(e) {
     this.setState({ summonername: e.target.value })
   }
+
+ async getMatches() {
+    if (this.state.accountid !== '') {
+      const response = await fetch('/api/summoner/matches/?accountid=' + this.state.accountid);
+      const json = await response.json();
+      this.setState({matches: json});
+    }
+
+ }
+
  
   async getAccountId() {
 
-    const response = await fetch('/api/hi/?summonername=' + this.state.summonername);
-    const json = await response.json();
-    this.setState({accountid: json});
-/*
-    fetch('/api/hi')
-     .then(response=>response.json())
-     .then(json=> this.setState({ accountid: json}))*/
+    if (this.state.summonername !== '') {
+      const response = await fetch('/api/summoner/info/?summonername=' + this.state.summonername);
+      const json = await response.json();
+      this.setState({accountid: json}, this.getMatches);
+    }
+
   }
+
 
   async componentDidMount() {
 
@@ -41,25 +52,12 @@ class App extends Component {
     const json = await response.json();
     this.setState({message: json});
 
-/*
-    fetch('/api/message')
-      .then(response => response.json())
-      .then(json => this.setState({ message: json }))*/
-
-    this.setState({ summonername: this.getParameterByName('summonername')}, this.getAccountId);
+    if (this.getParameterByName('summonername') !== null) {
+      this.setState({ summonername: this.getParameterByName('summonername')}, this.getAccountId);
+    }
    
 
   }
-
-  async asyncData () {
-
-
-    
- 
-
-  }
-
-  
 
   render() {
     return (
@@ -77,7 +75,7 @@ class App extends Component {
             <input id="summonername" name="summonername" type="text"/>        
           <button>Search</button>
         </form>
-        <h4>{this.state.summonername}{this.state.accountid}</h4>
+        <h4>{this.state.summonername}{this.state.accountid}{this.state.matches}</h4>
         </div>
       </div>
 
